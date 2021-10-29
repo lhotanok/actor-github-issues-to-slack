@@ -1,1 +1,1 @@
-# Github Issues To Slack
+# Github issues to Slack
