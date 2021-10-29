@@ -1,13 +1,24 @@
 const Apify = require('apify');
 
+const { getGithubIssuesRequests } = require('./tools');
+
 const { utils: { log } } = Apify;
 
-exports.handleGithubIssues = async ({ request, json }) => {
-    const { userData: { repository } } = request;
+exports.handleGithubIssues = async ({ request, crawler, json }, issuesState) => {
+    const { userData: { repository, page } } = request;
+    const { requestQueue } = crawler;
 
     const issues = getIssuesInfo(json, repository);
+    log.info(`Scraped ${issues.length} issues from ${repository} repository.`);
 
-    await Apify.pushData(issues);
+    if (issues.length !== 0) {
+        const nextIssueRequests = getGithubIssuesRequests([repository], page + 1);
+        for (const nextRequest of nextIssueRequests) {
+            await requestQueue.addRequest(nextRequest);
+        }
+    }
+
+    issuesState.push(...issues);
 };
 
 function getIssuesInfo(items, repository) {

@@ -7,8 +7,14 @@ const { utils: { log } } = Apify;
 Apify.main(async () => {
     const { repositories, token, channel, proxyConfiguration } = await Apify.getInput();
 
+    const issuesState = await Apify.getValue('ISSUES_STATE') || [];
+    Apify.events.on('persistState', async () => Apify.setValue('ISSUES_STATE', issuesState));
+
     const issuesRequests = getGithubIssuesRequests(repositories);
-    const requestList = await Apify.openRequestList('github-issues-urls', issuesRequests);
+    const requestQueue = await Apify.openRequestQueue();
+    for (const request of issuesRequests) {
+        await requestQueue.addRequest(request);
+    }
 
     const proxyConfig = {};
     if (proxyConfiguration && (proxyConfiguration.useApifyProxy || proxyConfiguration.proxyUrls)) {
@@ -17,17 +23,19 @@ Apify.main(async () => {
     }
 
     const crawler = new Apify.CheerioCrawler({
-        requestList,
+        requestQueue,
         ...proxyConfig,
         maxConcurrency: 50,
         handlePageFunction: async (context) => {
             const { url } = context.request;
             log.info('Page opened.', { url });
-            handleGithubIssues(context);
+            handleGithubIssues(context, issuesState);
         },
     });
 
     log.info('Starting the Github issues crawl.');
     await crawler.run();
     log.info('Crawl finished.');
+
+    log.info(`Scraped ${issuesState.length} Github issues in total.`);
 });
