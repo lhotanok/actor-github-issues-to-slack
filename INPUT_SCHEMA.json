@@ -1,0 +1,34 @@
+{
+  "title": "Input schema for Github issues to Slack actor",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": ["repositories", "token", "channel"],
+  "properties": {
+    "repositories": {
+      "title": "Repositories",
+      "type": "array",
+      "description": "Enter repositories from which you want to collect the issues. Use the following format: username/repository-name",
+      "editor": "stringList",
+      "prefill": ["apifytech/apify-js"]
+    },
+    "token": {
+      "title": "Slack token",
+      "type": "string",
+      "description": "Slack API token.",
+      "editor": "textfield"
+    },
+    "channel": {
+        "title": "Slack channel",
+        "type": "string",
+        "description": "Channel where the notification with Github issues information will be sent (e.g. #general)",
+        "prefill": "#general",
+        "editor": "textfield"
+    },
+    "proxyConfiguration": {
+      "title": "Proxy configuration",
+      "type": "object",
+      "description": "Select proxy configuration",
+      "editor": "proxy"
+    }
+  }
+}
