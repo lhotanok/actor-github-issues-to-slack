@@ -1,3 +1,6 @@
-exports.getGithubIssuesUrls = (repositories) => {
-    return repositories.map((repository) => `https://api.github.com/repos/${repository}/issues`);
+exports.getGithubIssuesRequests = (repositories) => {
+    return repositories.map((repository) => ({
+        url: `https://api.github.com/repos/${repository}/issues`,
+        userData: { repository },
+    }));
 };

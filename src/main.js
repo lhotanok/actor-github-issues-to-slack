@@ -1,14 +1,14 @@
 const Apify = require('apify');
-const { handlGithubIssues } = require('./routes');
-const { getGithubIssuesUrls } = require('./tools');
+const { handleGithubIssues } = require('./routes');
+const { getGithubIssuesRequests } = require('./tools');
 
 const { utils: { log } } = Apify;
 
 Apify.main(async () => {
     const { repositories, token, channel, proxyConfiguration } = await Apify.getInput();
 
-    const issuesUrls = getGithubIssuesUrls(repositories);
-    const requestList = await Apify.openRequestList('github-issues-urls', issuesUrls);
+    const issuesRequests = getGithubIssuesRequests(repositories);
+    const requestList = await Apify.openRequestList('github-issues-urls', issuesRequests);
 
     const proxyConfig = {};
     if (proxyConfiguration && (proxyConfiguration.useApifyProxy || proxyConfiguration.proxyUrls)) {
@@ -23,7 +23,7 @@ Apify.main(async () => {
         handlePageFunction: async (context) => {
             const { url } = context.request;
             log.info('Page opened.', { url });
-            handlGithubIssues(context);
+            handleGithubIssues(context);
         },
     });
 
