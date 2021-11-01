@@ -26,12 +26,12 @@ function buildNotificationMessage(modifiedIssues, { openedIssues, closedIssues }
 
     if (openedIssues) {
         const opened = getIssuesWithState(modifiedIssues, OPENED_ISSUE);
-        message = buildIssuesNotification(opened, 'opened');
+        message = `${buildIssuesNotification(opened, 'opened')}\n`;
     }
 
     if (closedIssues) {
         const closed = getIssuesWithState(modifiedIssues, CLOSED_ISSUE);
-        message = buildIssuesNotification(closed, 'closed');
+        message = `${message}${buildIssuesNotification(closed, 'closed')}`;
     }
 
     return message;
