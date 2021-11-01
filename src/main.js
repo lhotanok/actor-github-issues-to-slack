@@ -39,8 +39,8 @@ Apify.main(async () => {
     await crawler.run();
     log.info('Crawl finished.');
 
-    log.info(`Scraped ${issuesState.length} Github issues in total.`);
     await Apify.setValue(ISSUES_STATE, issuesState);
 
-    await getModifiedIssues();
+    const modifiedIssues = await getModifiedIssues(issuesState);
+    log.info(`MODIFIED ISSUES: len=${modifiedIssues.length}`);
 });

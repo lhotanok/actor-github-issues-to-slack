@@ -9,7 +9,7 @@ exports.handleGithubIssues = async ({ request, crawler, json }, issuesState) => 
     const { requestQueue } = crawler;
 
     const issues = getIssuesInfo(json);
-    log.info(`Scraped ${issues.length} issues from ${repository} repository.`);
+    log.info(`Scraped ${issues.length} issues from ${repository} repository (page ${page}).`);
 
     if (issues.length !== 0) {
         const nextIssueRequests = getGithubIssuesRequests([repository], page + 1);
