@@ -26,13 +26,13 @@
     },
     "openedIssues": {
       "title": "Monitor opened issues",
-      "type": "bool",
+      "type": "boolean",
       "description": "Check this option if you want to send notifications about newly opened issues. The value is `true` by default.",
       "default": true
     },
     "closedIssues": {
       "title": "Monitor closed issues",
-      "type": "bool",
+      "type": "boolean",
       "description": "Check this option if you want to send notifications about newly closed issues. The value is `true` by default.",
       "default": true
     },
