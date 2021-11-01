@@ -1,14 +1,15 @@
 const Apify = require('apify');
 const { handleGithubIssues } = require('./routes');
-const { getGithubIssuesRequests } = require('./tools');
+const { getGithubIssuesRequests, getModifiedIssues } = require('./tools');
+const { ISSUES_STATE } = require('./constants');
 
 const { utils: { log } } = Apify;
 
 Apify.main(async () => {
     const { repositories, token, channel, proxyConfiguration } = await Apify.getInput();
 
-    const issuesState = await Apify.getValue('ISSUES_STATE') || [];
-    Apify.events.on('persistState', async () => Apify.setValue('ISSUES_STATE', issuesState));
+    const issuesState = await Apify.getValue(ISSUES_STATE) || {};
+    Apify.events.on('persistState', async () => Apify.setValue(ISSUES_STATE, issuesState));
 
     const issuesRequests = getGithubIssuesRequests(repositories);
     const requestQueue = await Apify.openRequestQueue();
@@ -29,7 +30,8 @@ Apify.main(async () => {
         handlePageFunction: async (context) => {
             const { url } = context.request;
             log.info('Page opened.', { url });
-            handleGithubIssues(context, issuesState);
+
+            return handleGithubIssues(context, issuesState);
         },
     });
 
@@ -38,4 +40,7 @@ Apify.main(async () => {
     log.info('Crawl finished.');
 
     log.info(`Scraped ${issuesState.length} Github issues in total.`);
+    await Apify.setValue(ISSUES_STATE, issuesState);
+
+    await getModifiedIssues();
 });

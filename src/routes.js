@@ -8,7 +8,7 @@ exports.handleGithubIssues = async ({ request, crawler, json }, issuesState) => 
     const { userData: { repository, page } } = request;
     const { requestQueue } = crawler;
 
-    const issues = getIssuesInfo(json, repository);
+    const issues = getIssuesInfo(json);
     log.info(`Scraped ${issues.length} issues from ${repository} repository.`);
 
     if (issues.length !== 0) {
@@ -18,10 +18,17 @@ exports.handleGithubIssues = async ({ request, crawler, json }, issuesState) => 
         }
     }
 
-    issuesState.push(...issues);
+    if (!issuesState[repository]) {
+        issuesState[repository] = {};
+    }
+
+    issues.forEach((issue) => {
+        const { id } = issue;
+        issuesState[repository][id] = issue;
+    });
 };
 
-function getIssuesInfo(items, repository) {
+function getIssuesInfo(items) {
     return items.map((issue) => {
         const { title, id, state, comments, labels, assignee } = issue;
 
@@ -29,7 +36,6 @@ function getIssuesInfo(items, repository) {
         const assigneeLogin = assignee ? assignee.login : null;
 
         return {
-            repository,
             title,
             id,
             state,
