@@ -1,5 +1,5 @@
 const Apify = require('apify');
-const { ISSUES_STATE, SUCCEEDED_STATUS, ACTOR_ID } = require('./constants');
+const { ISSUES_STATE, SUCCEEDED_STATUS, THIS_ACTOR_ID } = require('./constants');
 
 const { utils: { log } } = Apify;
 
@@ -11,14 +11,14 @@ exports.getGithubIssuesRequests = (repositories, page = 1) => {
 };
 
 exports.getModifiedIssues = async (currentIssues) => {
-    const modifiedIssues = [];
+    const modifiedIssues = {};
 
     const lastRunIssues = await getLastRunIssues();
 
     // do not compare current issues with the previous state when it is empty
     // do not mark all issues as modified on the first run of the actor
     if (lastRunIssues === {}) {
-        return [];
+        return {};
     }
 
     Object.keys(currentIssues).forEach((repository) => {
@@ -30,7 +30,10 @@ exports.getModifiedIssues = async (currentIssues) => {
                 const lastRunIssue = lastRunIssues[repository][issueId];
 
                 if (issueStateChanged(currentIssue, lastRunIssue)) {
-                    modifiedIssues.push(currentIssue);
+                    if (!modifiedIssues[repository]) {
+                        modifiedIssues[repository] = [];
+                    }
+                    modifiedIssues[repository].push(currentIssue);
                 }
             });
         }
@@ -41,7 +44,7 @@ exports.getModifiedIssues = async (currentIssues) => {
 
 async function getLastRunIssues() {
     const apifyClient = Apify.newClient({ token: process.env.APIFY_TOKEN });
-    const actorClient = apifyClient.actor(ACTOR_ID);
+    const actorClient = apifyClient.actor(THIS_ACTOR_ID);
 
     // selects the last actor's run that finished with a SUCCEEDED status
     const lastSucceededRunClient = actorClient.lastRun({ status: SUCCEEDED_STATUS });

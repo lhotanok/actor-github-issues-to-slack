@@ -24,6 +24,18 @@
         "prefill": "#general",
         "editor": "textfield"
     },
+    "openedIssues": {
+      "title": "Monitor opened issues",
+      "type": "bool",
+      "description": "Check this option if you want to send notifications about newly opened issues. The value is `true` by default.",
+      "default": true
+    },
+    "closedIssues": {
+      "title": "Monitor closed issues",
+      "type": "bool",
+      "description": "Check this option if you want to send notifications about newly closed issues. The value is `true` by default.",
+      "default": true
+    },
     "proxyConfiguration": {
       "title": "Proxy configuration",
       "type": "object",
