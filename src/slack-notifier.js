@@ -17,7 +17,7 @@ exports.sendModifiedIssuesNotification = async (modifiedIssues, { channel, token
     const apifyClient = Apify.newClient({ token: process.env.APIFY_TOKEN });
     const actorClient = apifyClient.actor(SLACK_ACTOR_ID);
 
-    // await actorClient.call(slackActorInput);
+    await actorClient.call(slackActorInput);
 
     log.info(`Slack notification:
     ${JSON.stringify(slackActorInput, null, 2)}`);
