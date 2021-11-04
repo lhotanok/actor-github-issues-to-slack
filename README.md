@@ -10,16 +10,22 @@ Note that when you run the actor for the first time it will only fetch the issue
 
 🆕 **Testing opened issue**
 **Url**: https://github.com/lhotanok/actor-github-issues-to-slack/issues/4
+
 **Labels**: ["documentation","good first issue"]
+
 **Author**: lhotanok
+
 **Assignee**: lhotanok
 
 ### Closed issue
 
 ✅ **Testing closed issue**
 **Url**: https://github.com/lhotanok/actor-github-issues-to-slack/issues/5
+
 **Labels**: ["documentation"]
+
 **Author**: lhotanok
+
 **Assignee**: null
 
 ## Input
