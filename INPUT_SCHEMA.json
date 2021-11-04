@@ -24,17 +24,17 @@
         "prefill": "#general",
         "editor": "textfield"
     },
-    "openedIssues": {
-      "title": "Monitor opened issues",
+    "excludeOpenedIssues": {
+      "title": "Exclude opened issues",
       "type": "boolean",
-      "description": "Check this option if you want to send notifications about newly opened issues. The value is `true` by default.",
-      "default": true
+      "description": "Check this option if you don't want to send notifications about newly opened issues. The value is `false` by default.",
+      "default": false
     },
-    "closedIssues": {
-      "title": "Monitor closed issues",
+    "excludeClosedIssues": {
+      "title": "Exclude closed issues",
       "type": "boolean",
-      "description": "Check this option if you want to send notifications about newly closed issues. The value is `true` by default.",
-      "default": true
+      "description": "Check this option if you don't want to send notifications about newly closed issues. The value is `false` by default.",
+      "default": false
     },
     "proxyConfiguration": {
       "title": "Proxy configuration",

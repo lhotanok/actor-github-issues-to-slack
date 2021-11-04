@@ -3,9 +3,9 @@ const { SLACK_ACTOR_ID, OPENED_ISSUE, CLOSED_ISSUE } = require('./constants');
 
 const { utils: { log } } = Apify;
 
-exports.sendModifiedIssuesNotification = async (modifiedIssues, { channel, token }, { openedIssues, closedIssues }) => {
+exports.sendModifiedIssuesNotification = async (modifiedIssues, { channel, token }, { excludeOpenedIssues, excludeClosedIssues }) => {
     const text = 'Github issues tracker';
-    const blocks = buildNotificationBlocks(modifiedIssues, { openedIssues, closedIssues });
+    const blocks = buildNotificationBlocks(modifiedIssues, { excludeOpenedIssues, excludeClosedIssues });
 
     const slackActorInput = {
         token,
@@ -23,17 +23,16 @@ exports.sendModifiedIssuesNotification = async (modifiedIssues, { channel, token
     ${JSON.stringify(slackActorInput, null, 2)}`);
 };
 
-function buildNotificationBlocks(modifiedIssues, { openedIssues, closedIssues }) {
+function buildNotificationBlocks(modifiedIssues, { excludeOpenedIssues, excludeClosedIssues }) {
     const blocks = [];
-    log.info(`OPENED ISSUES: ${openedIssues}, CLOSED ISSUES: ${closedIssues}`);
 
     blocks.push(buildHeaderBlock('Updated issues'));
 
-    if (openedIssues !== false) {
+    if (!excludeOpenedIssues) {
         appendIssues(blocks, modifiedIssues, OPENED_ISSUE);
     }
 
-    if (closedIssues !== false) {
+    if (!excludeClosedIssues) {
         appendIssues(blocks, modifiedIssues, CLOSED_ISSUE);
     }
 
