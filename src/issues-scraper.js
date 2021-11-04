@@ -30,7 +30,7 @@ exports.handleGithubIssues = async ({ request, crawler, json }, issuesState) => 
 
 function getIssuesInfo(items) {
     return items.map((issue) => {
-        const { title, id, state, comments, labels, assignee } = issue;
+        const { title, id, state, labels, assignee } = issue;
 
         const labelNames = labels.map((label) => label.name);
         const assigneeLogin = assignee ? assignee.login : null;
@@ -41,10 +41,7 @@ function getIssuesInfo(items) {
             state,
             labels: labelNames,
             author: issue.user.login,
-            createdAt: issue.created_at,
-            updatedAt: issue.updated_at,
             assignee: assigneeLogin,
-            comments,
             url: issue.html_url,
         };
     });

@@ -17,7 +17,7 @@ exports.sendModifiedIssuesNotification = async (modifiedIssues, { channel, token
     const apifyClient = Apify.newClient({ token: process.env.APIFY_TOKEN });
     const actorClient = apifyClient.actor(SLACK_ACTOR_ID);
 
-    const run = await actorClient.call(slackActorInput);
+    // await actorClient.call(slackActorInput);
 
     log.info(`Slack notification:
     ${JSON.stringify(slackActorInput, null, 2)}`);
@@ -27,27 +27,20 @@ function buildNotificationBlocks(modifiedIssues, { openedIssues, closedIssues })
     const blocks = [];
     log.info(`OPENED ISSUES: ${openedIssues}, CLOSED ISSUES: ${closedIssues}`);
 
+    blocks.push(buildHeaderBlock('Updated issues'));
+
     if (openedIssues !== false) {
-        const opened = getIssuesWithState(modifiedIssues, OPENED_ISSUE);
-        blocks.push(buildHeaderBlock(`Newly opened issues:`));
-        blocks.push(...buildIssuesNotificationBlocks(opened));
+        appendIssues(blocks, modifiedIssues, OPENED_ISSUE);
     }
 
     if (closedIssues !== false) {
-        const closed = getIssuesWithState(modifiedIssues, CLOSED_ISSUE);
-
-        if (blocks.length !== 0) {
-            blocks.push({ type: 'divider' });
-        }
-
-        blocks.push(buildHeaderBlock(`Newly closed issues:`));
-        blocks.push(...buildIssuesNotificationBlocks(closed));
+        appendIssues(blocks, modifiedIssues, CLOSED_ISSUE);
     }
 
     return blocks;
 }
 
-function getIssuesWithState(modifiedIssues, state) {
+function getIssuesWithMatchingState(modifiedIssues, state) {
     const issues = {};
 
     Object.keys(modifiedIssues).forEach((repository) => {
@@ -62,6 +55,22 @@ function getIssuesWithState(modifiedIssues, state) {
     return issues;
 }
 
+function appendDividerBlock(blocks) {
+    if (blocks.length !== 0) {
+        blocks.push(buildDividerBlock());
+    }
+}
+
+function appendIssues(blocks, issues, state) {
+    const stateIssues = getIssuesWithMatchingState(issues, state);
+    const issueBlocks = buildIssueNotificationBlocks(stateIssues);
+
+    issueBlocks.forEach((issueBlock) => {
+        appendDividerBlock(blocks);
+        blocks.push(issueBlock);
+    });
+}
+
 function buildHeaderBlock(text) {
     return {
         type: 'header',
@@ -72,7 +81,11 @@ function buildHeaderBlock(text) {
     };
 }
 
-function buildIssuesNotificationBlocks(issues) {
+function buildDividerBlock() {
+    return { type: 'divider' };
+}
+
+function buildIssueNotificationBlocks(issues) {
     const notificationBlocks = [];
 
     Object.keys(issues).forEach((repository) => {
@@ -89,23 +102,21 @@ function buildIssuesNotificationBlocks(issues) {
     return notificationBlocks;
 }
 
-function buildIssueNotificationBlock(issue, repository) {
-    const { title, state, labels, author, createdAt, updatedAt, assignee, comments, url } = issue;
+function buildIssueNotificationBlock(issue) {
+    const { title, url, state, labels, author, assignee } = issue;
+
+    const stateEmoji = state === OPENED_ISSUE ? '🆕' : '✅';
 
     return {
         type: 'section',
         text: {
             type: 'mrkdwn',
-            text: `*${title}*`,
+            text: `*${title}* ${stateEmoji}`,
         },
         fields: [
             {
                 type: 'mrkdwn',
-                text: `*Repository*: ${repository}`,
-            },
-            {
-                type: 'mrkdwn',
-                text: `*State*: ${state}`,
+                text: `*Url*: ${url}`,
             },
             {
                 type: 'mrkdwn',
@@ -117,23 +128,7 @@ function buildIssueNotificationBlock(issue, repository) {
             },
             {
                 type: 'mrkdwn',
-                text: `*Created at*: ${createdAt}`,
-            },
-            {
-                type: 'mrkdwn',
-                text: `*Updated at*: ${updatedAt}`,
-            },
-            {
-                type: 'mrkdwn',
                 text: `*Assignee*: ${assignee}`,
-            },
-            {
-                type: 'mrkdwn',
-                text: `*Comments*: ${comments}`,
-            },
-            {
-                type: 'mrkdwn',
-                text: `*Url*: ${url}`,
             },
         ],
     };
