@@ -8,7 +8,7 @@ const { utils: { log } } = Apify;
 
 Apify.main(async () => {
     const input = await Apify.getInput();
-    const { repositories, token, proxyConfiguration, excludeOpenedIssues, excludeClosedIssues } = input;
+    const { repositories, token, separateNotification, proxyConfiguration, excludeOpenedIssues, excludeClosedIssues } = input;
 
     // handle missing '#' at the beginning of channel name
     const channel = input.channel[0] === '#' ? input.channel : `#${input.channel}`;
@@ -51,6 +51,8 @@ Apify.main(async () => {
     log.info(`Found repositories with modified issues since previous run: ${modifiedRepositoriesCount}`);
 
     if (modifiedRepositoriesCount !== 0) {
-        await sendModifiedIssuesNotification(modifiedIssues, { channel, token }, { excludeOpenedIssues, excludeClosedIssues });
+        const slackIntegration = { channel, token, separateNotification };
+        const restrictions = { excludeOpenedIssues, excludeClosedIssues };
+        await sendModifiedIssuesNotification(modifiedIssues, slackIntegration, restrictions);
     }
 });

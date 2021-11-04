@@ -18,11 +18,18 @@
       "editor": "textfield"
     },
     "channel": {
-        "title": "Slack channel",
-        "type": "string",
-        "description": "Channel where the notification with Github issues information will be sent (e.g. #general)",
-        "prefill": "#general",
-        "editor": "textfield"
+      "title": "Slack channel",
+      "type": "string",
+      "description": "Channel where the notification with Github issues information will be sent (e.g. #general)",
+      "prefill": "#general",
+      "editor": "textfield"
+    },
+    "separateNotification": {
+      "title": "Separate notification per issue",
+      "type": "boolean",
+      "description": "Check this option if you want to send separate notification for each modified issue rather than sending 1 notification with all issues merged.",
+      "prefill": true,
+      "default": true
     },
     "excludeOpenedIssues": {
       "title": "Exclude opened issues",

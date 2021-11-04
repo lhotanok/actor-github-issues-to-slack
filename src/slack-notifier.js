@@ -3,37 +3,55 @@ const { SLACK_ACTOR_ID, OPENED_ISSUE, CLOSED_ISSUE } = require('./constants');
 
 const { utils: { log } } = Apify;
 
-exports.sendModifiedIssuesNotification = async (modifiedIssues, { channel, token }, { excludeOpenedIssues, excludeClosedIssues }) => {
-    const text = 'Github issues tracker';
-    const blocks = buildNotificationBlocks(modifiedIssues, { excludeOpenedIssues, excludeClosedIssues });
+exports.sendModifiedIssuesNotification = async (modifiedIssues, slackIntegration, restrictions) => {
+    const { channel, token, separateNotification } = slackIntegration;
 
-    const slackActorInput = {
-        token,
-        channel,
-        text,
-        blocks,
-    };
+    const blocks = buildNotificationBlocks(modifiedIssues, restrictions, separateNotification);
 
-    const apifyClient = Apify.newClient({ token: process.env.APIFY_TOKEN });
-    const actorClient = apifyClient.actor(SLACK_ACTOR_ID);
+    if (blocks.length > 1) {
+        // 1 block is always generated for the header
+        const text = 'Github issues tracker';
 
-    await actorClient.call(slackActorInput);
+        const slackActorInput = {
+            token,
+            channel,
+            text,
+            blocks,
+        };
 
-    log.info(`Slack notification:
-    ${JSON.stringify(slackActorInput, null, 2)}`);
+        const apifyClient = Apify.newClient({ token: process.env.APIFY_TOKEN });
+        const actorClient = apifyClient.actor(SLACK_ACTOR_ID);
+
+        if (!separateNotification) {
+            await actorClient.call(slackActorInput);
+
+            log.info(`Slack notification:
+            ${JSON.stringify(slackActorInput, null, 2)}`);
+        } else {
+            for (const block of blocks) {
+                slackActorInput.blocks = [block];
+                await actorClient.call(slackActorInput);
+
+                log.info(`Slack notification:
+                ${JSON.stringify(slackActorInput, null, 2)}`);
+            }
+        }
+    }
 };
 
-function buildNotificationBlocks(modifiedIssues, { excludeOpenedIssues, excludeClosedIssues }) {
+function buildNotificationBlocks(modifiedIssues, { excludeOpenedIssues, excludeClosedIssues }, separateNotification) {
     const blocks = [];
 
-    blocks.push(buildHeaderBlock('Updated issues'));
+    if (!separateNotification) {
+        blocks.push(buildHeaderBlock('Updated issues'));
+    }
 
     if (!excludeOpenedIssues) {
-        appendIssues(blocks, modifiedIssues, OPENED_ISSUE);
+        appendIssues(blocks, modifiedIssues, OPENED_ISSUE, separateNotification);
     }
 
     if (!excludeClosedIssues) {
-        appendIssues(blocks, modifiedIssues, CLOSED_ISSUE);
+        appendIssues(blocks, modifiedIssues, CLOSED_ISSUE, separateNotification);
     }
 
     return blocks;
@@ -60,12 +78,14 @@ function appendDividerBlock(blocks) {
     }
 }
 
-function appendIssues(blocks, issues, state) {
+function appendIssues(blocks, issues, state, separateNotification) {
     const stateIssues = getIssuesWithMatchingState(issues, state);
     const issueBlocks = buildIssueNotificationBlocks(stateIssues);
 
     issueBlocks.forEach((issueBlock) => {
-        appendDividerBlock(blocks);
+        if (!separateNotification) {
+            appendDividerBlock(blocks);
+        }
         blocks.push(issueBlock);
     });
 }
@@ -110,7 +130,7 @@ function buildIssueNotificationBlock(issue) {
         type: 'section',
         text: {
             type: 'mrkdwn',
-            text: `*${title}* ${stateEmoji}`,
+            text: `${stateEmoji} *${title}*`,
         },
         fields: [
             {
