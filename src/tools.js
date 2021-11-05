@@ -1,5 +1,5 @@
 const Apify = require('apify');
-const { ISSUES_STATE } = require('./constants');
+const { ISSUES_STATE, ISSUES_KEY_VALUE_STORE } = require('./constants');
 
 const { utils: { log } } = Apify;
 
@@ -13,7 +13,7 @@ exports.getGithubIssuesRequests = (repositories, page = 1) => {
 exports.getModifiedIssues = async (currentIssues) => {
     const modifiedIssues = {};
 
-    const issuesStore = await Apify.openKeyValueStore('github-issues');
+    const issuesStore = await Apify.openKeyValueStore(ISSUES_KEY_VALUE_STORE);
     const previousIssues = await issuesStore.getValue(ISSUES_STATE) || {};
 
     // do not compare current issues with the previous state when it is empty
