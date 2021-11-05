@@ -1,8 +1,5 @@
 exports.ISSUES_STATE = 'ISSUES_STATE';
-
-exports.SUCCEEDED_STATUS = 'SUCCEEDED';
-
-exports.THIS_ACTOR_ID = 'lhotanok/github-issues-to-slack';
+exports.ISSUES_KEY_VALUE_STORE = 'github-issues';
 exports.SLACK_ACTOR_ID = 'katerinahronik/slack-message';
 
 exports.OPENED_ISSUE = 'open';

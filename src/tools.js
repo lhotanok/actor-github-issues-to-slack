@@ -1,5 +1,5 @@
 const Apify = require('apify');
-const { ISSUES_STATE, SUCCEEDED_STATUS, THIS_ACTOR_ID } = require('./constants');
+const { ISSUES_STATE } = require('./constants');
 
 const { utils: { log } } = Apify;
 
@@ -13,21 +13,22 @@ exports.getGithubIssuesRequests = (repositories, page = 1) => {
 exports.getModifiedIssues = async (currentIssues) => {
     const modifiedIssues = {};
 
-    const lastRunIssues = await getLastRunIssues();
+    const issuesStore = await Apify.openKeyValueStore('github-issues');
+    const previousIssues = await issuesStore.getValue(ISSUES_STATE) || {};
 
     // do not compare current issues with the previous state when it is empty
     // do not mark all issues as modified on the first run of the actor
-    if (lastRunIssues === {}) {
+    if (previousIssues === {}) {
         return {};
     }
 
     Object.keys(currentIssues).forEach((repository) => {
         // compare current issues only for repositories that were monitored before
         // do not mark all issues as modified for the newly monitored repositories
-        if (lastRunIssues[repository]) {
+        if (previousIssues[repository]) {
             Object.keys((currentIssues[repository])).forEach((issueId) => {
                 const currentIssue = currentIssues[repository][issueId];
-                const lastRunIssue = lastRunIssues[repository][issueId];
+                const lastRunIssue = previousIssues[repository][issueId];
 
                 if (issueStateChanged(currentIssue, lastRunIssue)) {
                     if (!modifiedIssues[repository]) {
@@ -41,19 +42,6 @@ exports.getModifiedIssues = async (currentIssues) => {
 
     return modifiedIssues;
 };
-
-async function getLastRunIssues() {
-    const apifyClient = Apify.newClient({ token: process.env.APIFY_TOKEN });
-    const actorClient = apifyClient.actor(THIS_ACTOR_ID);
-
-    // selects the last actor's run that finished with a SUCCEEDED status
-    const lastSucceededRunClient = actorClient.lastRun({ status: SUCCEEDED_STATUS });
-
-    const issues = await lastSucceededRunClient.keyValueStore().getRecord(ISSUES_STATE);
-    const lastRunIssues = issues ? issues.value : {};
-
-    return lastRunIssues;
-}
 
 function issueStateChanged(currentIssue, oldIssue) {
     let stateChanged = false;

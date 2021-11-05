@@ -2,7 +2,7 @@ const Apify = require('apify');
 const { handleGithubIssues } = require('./issues-scraper');
 const { sendModifiedIssuesNotification } = require('./slack-notifier');
 const { getGithubIssuesRequests, getModifiedIssues } = require('./tools');
-const { ISSUES_STATE } = require('./constants');
+const { ISSUES_STATE, ISSUES_KEY_VALUE_STORE } = require('./constants');
 
 const { utils: { log } } = Apify;
 
@@ -13,8 +13,10 @@ Apify.main(async () => {
     // handle missing '#' at the beginning of channel name
     const channel = input.channel[0] === '#' ? input.channel : `#${input.channel}`;
 
-    const issuesState = await Apify.getValue(ISSUES_STATE) || {};
-    Apify.events.on('persistState', async () => Apify.setValue(ISSUES_STATE, issuesState));
+    const issuesStore = await Apify.openKeyValueStore(ISSUES_KEY_VALUE_STORE);
+
+    const issuesState = await issuesStore.getValue(ISSUES_STATE) || {};
+    Apify.events.on('persistState', async () => { await issuesStore.setValue(ISSUES_STATE, issuesState); });
 
     const issuesRequests = getGithubIssuesRequests(repositories);
     const requestQueue = await Apify.openRequestQueue();
@@ -40,11 +42,11 @@ Apify.main(async () => {
         },
     });
 
-    log.info('Starting the Github issues crawl.');
+    log.info('Starting Github issues crawl.');
     await crawler.run();
     log.info('Crawl finished.');
 
-    await Apify.setValue(ISSUES_STATE, issuesState);
+    issuesStore.setValue(ISSUES_STATE, issuesState);
 
     const modifiedIssues = await getModifiedIssues(issuesState);
     const modifiedRepositoriesCount = Object.keys(modifiedIssues).length;
