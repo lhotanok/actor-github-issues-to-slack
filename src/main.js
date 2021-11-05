@@ -46,7 +46,7 @@ Apify.main(async () => {
     await crawler.run();
     log.info('Crawl finished.');
 
-    issuesStore.setValue(ISSUES_STATE, issuesState);
+    await issuesStore.setValue(ISSUES_STATE, issuesState);
 
     const modifiedIssues = await getModifiedIssues(issuesState);
     const modifiedRepositoriesCount = Object.keys(modifiedIssues).length;
