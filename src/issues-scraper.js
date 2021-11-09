@@ -5,8 +5,14 @@ const { getGithubIssuesRequests } = require('./tools');
 const { utils: { log } } = Apify;
 
 exports.handleGithubIssues = async ({ request, crawler, json }, issuesState) => {
-    const { userData: { repository, page } } = request;
+    const { url, userData: { repository, page } } = request;
     const { requestQueue } = crawler;
+
+    if (json.message && json.message === 'Not Found') {
+        log.error(`Invalid url: ${url}
+        Check if repository exists and if it has the right input format: username/repository`);
+        return;
+    }
 
     const issues = getIssuesInfo(json);
     log.info(`Scraped ${issues.length} issues from ${repository} repository (page ${page}).`);

@@ -49,14 +49,19 @@ Apify.main(async () => {
     const issuesStore = await Apify.openKeyValueStore(ISSUES_KEY_VALUE_STORE);
     const previousState = await issuesStore.getValue(ISSUES_STATE);
 
-    const modifiedIssues = await getModifiedIssues(issuesState, previousState);
-    const modifiedRepositoriesCount = Object.keys(modifiedIssues).length;
-    log.info(`Found repositories with modified issues since previous run: ${modifiedRepositoriesCount}`);
+    if (!previousState) {
+        log.info('No previous state of GitHub issues found in global key value store github-issues.');
+        log.info('Saving the current state without comparing to the previous state. No Slack notification will be send.');
+    } else {
+        const modifiedIssues = await getModifiedIssues(issuesState, previousState);
+        const modifiedRepositoriesCount = Object.keys(modifiedIssues).length;
+        log.info(`Found ${modifiedRepositoriesCount} repositories with modified issues since previous run.`);
 
-    if (modifiedRepositoriesCount !== 0) {
-        const slackIntegration = { channel, token, separateNotification };
-        const restrictions = { excludeOpenedIssues, excludeClosedIssues };
-        await sendModifiedIssuesNotification(modifiedIssues, slackIntegration, restrictions);
+        if (modifiedRepositoriesCount !== 0) {
+            const slackIntegration = { channel, token, separateNotification };
+            const restrictions = { excludeOpenedIssues, excludeClosedIssues };
+            await sendModifiedIssuesNotification(modifiedIssues, slackIntegration, restrictions);
+        }
     }
 
     await issuesStore.setValue(ISSUES_STATE, issuesState);

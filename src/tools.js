@@ -14,7 +14,7 @@ exports.getModifiedIssues = async (currentIssues, previousIssues) => {
 
     // do not compare current issues with the previous state when it is empty
     // do not mark all issues as modified on the first run of the actor
-    if (previousIssues === {}) {
+    if (!previousIssues || previousIssues === {}) {
         return {};
     }
 
