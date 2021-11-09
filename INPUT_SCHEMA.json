@@ -28,7 +28,9 @@
       "title": "Separate notification per issue",
       "type": "boolean",
       "description": "Check this option if you want to send separate notification for each modified issue rather than sending 1 notification with all issues merged.",
-      "default": true
+      "default": true,
+      "sectionCaption": "Notification options",
+      "sectionDescription": "Additional settings for Slack notification format."
     },
     "excludeOpenedIssues": {
       "title": "Exclude opened issues",
@@ -46,7 +48,9 @@
       "title": "Proxy configuration",
       "type": "object",
       "description": "Select proxy configuration",
-      "editor": "proxy"
+      "editor": "proxy",
+      "sectionCaption": "Proxy configuration",
+      "sectionDescription": "No proxy is used by default."
     }
   }
 }
