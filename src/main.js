@@ -13,10 +13,8 @@ Apify.main(async () => {
     // handle missing '#' at the beginning of channel name
     const channel = input.channel[0] === '#' ? input.channel : `#${input.channel}`;
 
-    const issuesStore = await Apify.openKeyValueStore(ISSUES_KEY_VALUE_STORE);
-
-    const issuesState = await issuesStore.getValue(ISSUES_STATE) || {};
-    Apify.events.on('persistState', async () => { await issuesStore.setValue(ISSUES_STATE, issuesState); });
+    const issuesState = await Apify.getValue(ISSUES_STATE) || {};
+    Apify.events.on('persistState', async () => { await Apify.setValue(ISSUES_STATE, issuesState); });
 
     const issuesRequests = getGithubIssuesRequests(repositories);
     const requestQueue = await Apify.openRequestQueue();
@@ -46,9 +44,12 @@ Apify.main(async () => {
     await crawler.run();
     log.info('Crawl finished.');
 
-    await issuesStore.setValue(ISSUES_STATE, issuesState);
+    await Apify.setValue(ISSUES_STATE, issuesState);
 
-    const modifiedIssues = await getModifiedIssues(issuesState);
+    const issuesStore = await Apify.openKeyValueStore(ISSUES_KEY_VALUE_STORE);
+    const previousState = await issuesStore.getValue(ISSUES_STATE);
+
+    const modifiedIssues = await getModifiedIssues(issuesState, previousState);
     const modifiedRepositoriesCount = Object.keys(modifiedIssues).length;
     log.info(`Found repositories with modified issues since previous run: ${modifiedRepositoriesCount}`);
 
@@ -56,5 +57,7 @@ Apify.main(async () => {
         const slackIntegration = { channel, token, separateNotification };
         const restrictions = { excludeOpenedIssues, excludeClosedIssues };
         await sendModifiedIssuesNotification(modifiedIssues, slackIntegration, restrictions);
+
+        await issuesStore.setValue(ISSUES_STATE, issuesState);
     }
 });
