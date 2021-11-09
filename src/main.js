@@ -57,7 +57,7 @@ Apify.main(async () => {
         const slackIntegration = { channel, token, separateNotification };
         const restrictions = { excludeOpenedIssues, excludeClosedIssues };
         await sendModifiedIssuesNotification(modifiedIssues, slackIntegration, restrictions);
-
-        await issuesStore.setValue(ISSUES_STATE, issuesState);
     }
+
+    await issuesStore.setValue(ISSUES_STATE, issuesState);
 });
