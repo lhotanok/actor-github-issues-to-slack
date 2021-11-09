@@ -23,14 +23,14 @@ exports.sendModifiedIssuesNotification = async (modifiedIssues, slackIntegration
         const actorClient = apifyClient.actor(SLACK_ACTOR_ID);
 
         if (!separateNotification) {
-            // await actorClient.call(slackActorInput);
+            await actorClient.call(slackActorInput);
 
             log.info(`Slack notification:
             ${JSON.stringify(slackActorInput, null, 2)}`);
         } else {
             for (const block of blocks) {
                 slackActorInput.blocks = [block];
-                // await actorClient.call(slackActorInput);
+                await actorClient.call(slackActorInput);
 
                 log.info(`Slack notification:
                 ${JSON.stringify(slackActorInput, null, 2)}`);
