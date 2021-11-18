@@ -8,8 +8,7 @@ exports.sendModifiedIssuesNotification = async (modifiedIssues, slackIntegration
 
     const blocks = buildNotificationBlocks(modifiedIssues, restrictions, separateNotification);
 
-    if (blocks.length > 1) {
-        // 1 block is always generated for the header
+    if (shouldSendNotification(blocks, separateNotification)) {
         const text = 'Github issues tracker';
 
         const slackActorInput = {
@@ -38,6 +37,13 @@ exports.sendModifiedIssuesNotification = async (modifiedIssues, slackIntegration
         }
     }
 };
+
+function shouldSendNotification(blocks, separateNotification) {
+    const headerBlockSet = !separateNotification;
+    const minimumBlocks = headerBlockSet ? 2 : 1;
+
+    return blocks.length >= minimumBlocks;
+}
 
 function buildNotificationBlocks(modifiedIssues, { excludeOpenedIssues, excludeClosedIssues }, separateNotification) {
     const blocks = [];
