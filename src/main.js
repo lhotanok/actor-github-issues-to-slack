@@ -1,5 +1,5 @@
 const Apify = require('apify');
-const { handleGithubIssues } = require('./issues-scraper');
+const { scrapeGithubIssues } = require('./issues-scraper');
 const { sendModifiedIssuesNotification } = require('./slack-notifier');
 const { getGithubIssuesRequests, getModifiedIssues } = require('./tools');
 const { ISSUES_STATE, ISSUES_KEY_VALUE_STORE } = require('./constants');
@@ -36,7 +36,7 @@ Apify.main(async () => {
             const { url } = context.request;
             log.info('Page opened.', { url });
 
-            return handleGithubIssues(context, issuesState);
+            return scrapeGithubIssues(context, issuesState);
         },
     });
 
@@ -53,7 +53,7 @@ Apify.main(async () => {
         log.info('No previous state of GitHub issues found in global key value store github-issues.');
         log.info('Saving the current state without comparing to the previous state. No Slack notification will be send.');
     } else {
-        const modifiedIssues = await getModifiedIssues(issuesState, previousState);
+        const modifiedIssues = getModifiedIssues(issuesState, previousState);
         const modifiedRepositoriesCount = Object.keys(modifiedIssues).length;
         log.info(`Found ${modifiedRepositoriesCount} repositories with modified issues since previous run.`);
 

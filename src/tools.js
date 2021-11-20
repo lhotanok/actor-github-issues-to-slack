@@ -9,30 +9,38 @@ exports.getGithubIssuesRequests = (repositories, page = 1) => {
     }));
 };
 
-exports.getModifiedIssues = async (currentIssues, previousIssues) => {
+exports.getModifiedIssues = (currentIssues, previousIssues) => {
     const modifiedIssues = {};
 
-    // do not compare current issues with the previous state when it is empty
-    // do not mark all issues as modified on the first run of the actor
+    // don't compare current issues with the previous state when it is empty
+    //  (we don't want to mark all issues as modified on the first run of the actor)
     if (!previousIssues || previousIssues === {}) {
         return {};
     }
 
-    Object.keys(currentIssues).forEach((repository) => {
-        // compare current issues only for repositories that were monitored before
-        // do not mark all issues as modified for the newly monitored repositories
-        if (previousIssues[repository]) {
-            Object.keys((currentIssues[repository])).forEach((issueId) => {
-                const currentIssue = currentIssues[repository][issueId];
-                const lastRunIssue = previousIssues[repository][issueId];
+    // compare current issues only for repositories that were monitored before
+    //  don't mark all issues as modified for the newly monitored repositories
+    Object.keys(previousIssues).forEach((repository) => {
+        const modifiedRepoIssues = [];
 
-                if (issueStateChanged(currentIssue, lastRunIssue)) {
+        if (currentIssues[repository]) {
+            // condition needed for case we excluded repository we monitored in the previous run
+            Object.keys(currentIssues[repository]).forEach((issueId) => {
+                const currentIssue = currentIssues[repository][issueId];
+                const previousIssue = previousIssues[repository][issueId];
+
+                if (issueStateChanged(currentIssue, previousIssue)) {
                     if (!modifiedIssues[repository]) {
                         modifiedIssues[repository] = [];
                     }
-                    modifiedIssues[repository].push(currentIssue);
+
+                    modifiedRepoIssues.push(currentIssue);
                 }
             });
+
+            logIfAllRepoIssuesChanged(modifiedRepoIssues, currentIssues, previousIssues, repository);
+
+            modifiedIssues[repository].push(...modifiedRepoIssues);
         }
     });
 
@@ -50,4 +58,14 @@ function issueStateChanged(currentIssue, oldIssue) {
     }
 
     return stateChanged;
+}
+
+function logIfAllRepoIssuesChanged(modifiedRepoIssues, currentIssues, previousIssues, repository) {
+    if (modifiedRepoIssues.length === currentIssues[repository].length) {
+        log.info(`All issues from ${repository} were modified (${modifiedRepoIssues.length} issues).`);
+        log.info(`Current repository state:
+            ${JSON.stringify(currentIssues[repository], null, 2)}`);
+        log.info(`Previous repository state:
+            ${JSON.stringify(previousIssues[repository], null, 2)}`);
+    }
 }

@@ -4,7 +4,7 @@ const { getGithubIssuesRequests } = require('./tools');
 
 const { utils: { log } } = Apify;
 
-exports.handleGithubIssues = async ({ request, crawler, json }, issuesState) => {
+exports.scrapeGithubIssues = async ({ request, crawler, json }, issuesState) => {
     const { url, userData: { repository, page } } = request;
     const { requestQueue } = crawler;
 
@@ -15,13 +15,14 @@ exports.handleGithubIssues = async ({ request, crawler, json }, issuesState) => 
     }
 
     const issues = getIssuesInfo(json);
-    log.info(`Scraped ${issues.length} issues from ${repository} repository (page ${page}).`);
 
     if (issues.length !== 0) {
         const nextIssueRequests = getGithubIssuesRequests([repository], page + 1);
         for (const nextRequest of nextIssueRequests) {
             await requestQueue.addRequest(nextRequest);
         }
+
+        log.info(`Scraped ${issues.length} issues from ${repository} repository (page ${page}).`);
     }
 
     if (!issuesState[repository]) {
@@ -39,7 +40,7 @@ function getIssuesInfo(items) {
         const { title, id, state, labels, assignee } = issue;
 
         const labelNames = labels.map((label) => label.name);
-        const assigneeLogin = assignee ? assignee.login : null;
+        const assigneeLogin = assignee || assignee.login;
 
         return {
             title,
