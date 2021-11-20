@@ -40,7 +40,7 @@ function getIssuesInfo(items) {
         const { title, id, state, labels, assignee } = issue;
 
         const labelNames = labels.map((label) => label.name);
-        const assigneeLogin = assignee || assignee.login;
+        const assigneeLogin = assignee ? assignee.login : null;
 
         return {
             title,
