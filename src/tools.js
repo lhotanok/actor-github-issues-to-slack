@@ -21,7 +21,7 @@ exports.getModifiedIssues = (currentIssues, previousIssues) => {
     // compare current issues only for repositories that were monitored before
     //  don't mark all issues as modified for the newly monitored repositories
     Object.keys(previousIssues).forEach((repository) => {
-        const modifiedRepoIssues = [];
+        const modifiedRepoIssues = []; // to compare modified vs all repo issues count
 
         if (currentIssues[repository]) {
             // condition needed for case we excluded repository we monitored in the previous run
@@ -34,13 +34,12 @@ exports.getModifiedIssues = (currentIssues, previousIssues) => {
                         modifiedIssues[repository] = [];
                     }
 
+                    modifiedIssues[repository].push(currentIssue);
                     modifiedRepoIssues.push(currentIssue);
                 }
             });
 
             logIfAllRepoIssuesChanged(modifiedRepoIssues, currentIssues, previousIssues, repository);
-
-            modifiedIssues[repository].push(...modifiedRepoIssues);
         }
     });
 
