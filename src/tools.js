@@ -18,6 +18,9 @@ exports.getModifiedIssues = (currentIssues, previousIssues) => {
         return {};
     }
 
+    log.info(`Current number of monitored repositories: ${Object.keys(currentIssues).length}`);
+    log.info(`Previous number of monitored repositories: ${Object.keys(previousIssues).length}`);
+
     // compare current issues only for repositories that were monitored before
     //  don't mark all issues as modified for the newly monitored repositories
     Object.keys(previousIssues).forEach((repository) => {
@@ -57,6 +60,7 @@ function issueStateChanged(currentIssue, oldIssue) {
         stateChanged = currentIssue.state !== oldIssue.state;
     } else {
         // new issue discovered
+        log.info(`New issue discovered in repository (${currentIssue.url})`);
         stateChanged = true;
     }
 
