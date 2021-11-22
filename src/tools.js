@@ -36,6 +36,10 @@ exports.getModifiedIssues = (currentIssues, previousIssues) => {
 
                     modifiedIssues[repository].push(currentIssue);
                     modifiedRepoIssues.push(currentIssue);
+
+                    log.info(`Issue from ${repository} repository changed.`);
+                    log.info(`Previous issue state: ${JSON.stringify(previousIssue, null, 2)}`);
+                    log.info(`New issue state: ${JSON.stringify(currentIssue, null, 2)}`);
                 }
             });
 
