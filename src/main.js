@@ -36,7 +36,7 @@ Apify.main(async () => {
             const { url } = context.request;
             log.info('Page opened.', { url });
 
-            return scrapeGithubIssues(context, issuesState);
+            await scrapeGithubIssues(context, issuesState);
         },
     });
 
