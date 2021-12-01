@@ -21,7 +21,7 @@ exports.getModifiedIssues = (currentIssues, previousIssues) => {
     // compare current issues only for repositories that were monitored before
     //  don't mark all issues as modified for the newly monitored repositories
     Object.keys(previousIssues).forEach((repository) => {
-        if (Object.keys(repository).length > 0) {
+        if (Object.keys(previousIssues[repository]).length > 0) {
             // empty repository protection (actor migration occurred during the last run), to be handled elsewhere
 
             if (currentIssues[repository]) {
