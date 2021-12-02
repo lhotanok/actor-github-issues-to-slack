@@ -110,18 +110,16 @@ function buildDividerBlock() {
     return { type: 'divider' };
 }
 
-function buildIssueNotificationBlocks(issues) {
+function buildIssueNotificationBlocks(repositories) {
     const notificationBlocks = [];
 
-    Object.keys(issues).forEach((repository) => {
-        const repositoryIssues = issues[repository];
+    Object.keys(repositories).forEach((repository) => {
+        const issues = repositories[repository];
 
-        if (repositoryIssues.length !== 0) {
-            repositoryIssues.forEach((issue) => {
-                const notificationBlock = buildIssueNotificationBlock(issue, repository);
-                notificationBlocks.push(notificationBlock);
-            });
-        }
+        issues.forEach((issue) => {
+            const notificationBlock = buildIssueNotificationBlock(issue, repository);
+            notificationBlocks.push(notificationBlock);
+        });
     });
 
     return notificationBlocks;

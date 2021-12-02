@@ -1,4 +1,4 @@
-exports.ISSUES_STATE = 'ISSUES_STATE';
+exports.REPOSITORIES_STATE = 'REPOSITORIES_STATE';
 exports.ISSUES_KEY_VALUE_STORE = 'github-issues';
 exports.SLACK_ACTOR_ID = 'katerinahronik/slack-message';
 
