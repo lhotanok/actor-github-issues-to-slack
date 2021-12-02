@@ -39,6 +39,8 @@ Apify.main(async () => {
             log.info('Page opened.', { url });
 
             if (actorIsMigrating) {
+                // error needs to be thrown since `scrapeGithubIssues` function is not guaranteed to finish
+                //  and some issues might be missed in this run because of that
                 throw Error('Actor is migrating. Request will be processed in the next run.');
             }
 
@@ -71,4 +73,5 @@ Apify.main(async () => {
     }
 
     await saveRepositoryUpdates(issuesStore, repositoriesState);
+    log.info('Saved updated state of monitored GitHub repositories. Will be used for comparison in the next run.');
 });

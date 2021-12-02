@@ -11,16 +11,22 @@ exports.getGithubIssuesRequests = (repositories, page = 1) => {
     }));
 };
 
+/**
+ * Saves new repositories and issues from `repositoriesState` into named KVS in `issuesStore`.
+ * If the issue already exists, its value is updated.
+ * If the repository exists, its old issues are updated and new issues are saved.
+ * No issues are deleted from named KVS. They need to be persisted for comparison in next runs.
+ */
 exports.saveRepositoryUpdates = async (issuesStore, repositoriesState) => {
     const repositories = await issuesStore.getValue(REPOSITORIES_STATE) || {};
 
-    Object.keys(repositoriesState).forEach((monitoredRepository) => {
-        const updatedRepository = repositoriesState[monitoredRepository];
-        const oldRepository = repositories[monitoredRepository];
+    Object.keys(repositoriesState).forEach((repositoryName) => {
+        const updatedRepository = repositoriesState[repositoryName];
+        const oldRepository = repositories[repositoryName];
 
         if (!oldRepository) {
-            log.info(`Saving new repository for further monitoring: ${monitoredRepository}`);
-            repositories[monitoredRepository] = updatedRepository;
+            log.info(`Saving new repository for further monitoring: ${repositoryName}`);
+            repositories[repositoryName] = updatedRepository;
         } else {
             saveIssuesUpdates(updatedRepository, oldRepository);
         }
@@ -41,8 +47,8 @@ exports.getModifiedIssues = (currentRepositories, previousRepositories) => {
     // compare current issues only for repositories that were monitored before
     //  don't mark all issues as modified for the newly monitored repositories
     Object.keys(previousRepositories).forEach((repository) => {
+        // condition needed for case we excluded repository we monitored in the previous run
         if (currentRepositories[repository]) {
-            // condition needed for case we excluded repository we monitored in the previous run
             Object.keys(currentRepositories[repository]).forEach((issueId) => {
                 const currentIssue = currentRepositories[repository][issueId];
                 const previousIssue = previousRepositories[repository][issueId];
