@@ -13,6 +13,9 @@ Apify.main(async () => {
     // handle missing '#' at the beginning of channel name
     const channel = input.channel[0] === '#' ? input.channel : `#${input.channel}`;
 
+    let actorIsMigrating = false;
+    Apify.events.on('migrating', async () => { actorIsMigrating = true; });
+
     const repositoriesState = await Apify.getValue(REPOSITORIES_STATE) || {};
     Apify.events.on('persistState', async () => { await Apify.setValue(REPOSITORIES_STATE, repositoriesState); });
 
@@ -35,6 +38,10 @@ Apify.main(async () => {
             const { url } = context.request;
             log.info('Page opened.', { url });
 
+            if (actorIsMigrating) {
+                throw Error('Actor is migrating. Request will be processed in the next run.');
+            }
+
             await scrapeGithubIssues(context, repositoriesState);
         },
     });
@@ -50,7 +57,7 @@ Apify.main(async () => {
 
     if (!previousState) {
         log.info('No previous state of GitHub issues found in global key value store github-issues.');
-        log.info('Saving the current state without comparing to the previous state. No Slack notification will be send.');
+        log.info('Saving current state without comparing to previous state. No Slack notification will be send.');
     } else {
         const modifiedIssues = getModifiedIssues(repositoriesState, previousState);
         const modifiedRepositoriesCount = Object.keys(modifiedIssues).length;
