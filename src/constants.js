@@ -4,3 +4,5 @@ exports.SLACK_ACTOR_ID = 'katerinahronik/slack-message';
 
 exports.OPENED_ISSUE = 'open';
 exports.CLOSED_ISSUE = 'closed';
+
+exports.EXCLUDED_AUTHORS = ['dependabot[bot]'];
