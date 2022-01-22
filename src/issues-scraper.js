@@ -1,4 +1,5 @@
 const Apify = require('apify');
+const { EXCLUDED_AUTHORS } = require('./constants');
 
 const { getGithubIssuesRequests } = require('./tools');
 
@@ -36,7 +37,7 @@ exports.scrapeGithubIssues = async ({ request, crawler, json }, issuesState) => 
 };
 
 function getIssuesInfo(items) {
-    return items.map((issue) => {
+    const issues = items.map((issue) => {
         const { title, id, state, labels, assignee } = issue;
 
         const labelNames = labels.map((label) => label.name);
@@ -52,4 +53,10 @@ function getIssuesInfo(items) {
             url: issue.html_url,
         };
     });
+
+    const filteredIssues = issues.filter((issue) => {
+        return !EXCLUDED_AUTHORS.includes(issue.author);
+    });
+
+    return filteredIssues;
 }
